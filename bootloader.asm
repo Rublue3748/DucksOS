@@ -36,11 +36,11 @@ start:
 
     ; Load NUM_SECTORS into memory after this address
     ; Setup transfer packet
-    mov [.LBA_Packet],byte 0
+    mov [.LBA_Packet],byte 16
     mov [.LBA_Packet + 1],byte 0
     mov [.LBA_Packet + 2],word NUM_SECTORS
-    mov [.LBA_Packet + 4],word 0
-    mov [.LBA_Packet + 6],word 0x7e00
+    mov [.LBA_Packet + 4],word 0x7e00
+    mov [.LBA_Packet + 6],word 0
     mov esi,[.load_start_address]
     mov [.LBA_Packet + 8],esi
     mov esi,[.load_start_address + 4]
