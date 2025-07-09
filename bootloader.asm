@@ -9,6 +9,17 @@ entry:
 
 start:
     ; Reset all segment registers
+    xchg bx,bx
+
+    mov ax,0xFFFF
+    mov ds,ax
+    mov [ds:(test_value1+0x10)], word 0x5555
+
+    xor ax,ax
+    mov ds,ax
+    shl word [ds:test_value1],1
+
+
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -56,10 +67,7 @@ start:
     jmp .error
 
 .successful_load:
-    mov si,2
-    jmp .error
-    jmp .halting_loop
-
+    jmp boot
 
     
 
@@ -96,5 +104,10 @@ align 2
 .current_drive_number:
     db 0
 
+test_value1:
+    dw 0
+
     times 510-($-$$) db 0 
     dw 0xAA55
+
+%include "main.asm"
