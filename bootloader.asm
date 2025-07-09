@@ -11,14 +11,6 @@ start:
     ; Reset all segment registers
     xchg bx,bx
 
-    mov ax,0xFFFF
-    mov ds,ax
-    mov [ds:(test_value1+0x10)], word 0x5555
-
-    xor ax,ax
-    mov ds,ax
-    shl word [ds:test_value1],1
-
 
     xor ax, ax
     mov ds, ax
@@ -106,6 +98,8 @@ align 2
 
 test_value1:
     dw 0
+
+; TODO: Add proper MBR
 
     times 510-($-$$) db 0 
     dw 0xAA55

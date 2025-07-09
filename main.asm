@@ -1,41 +1,25 @@
 ; What needs to be done to boot:
-; - Enable A20
+; - (DONE) Enable A20
 ; - Setup FPU
 ; - Generate Memory Map
 ; - Select Video Mode
+; - Set up protected mode
+; - Load in kernel (might involve swapping back and forth w/ protected mode)
+; - Enter protected mode and kernel
+
 SECTION .text
 bits 16
 
 boot:
-    call Check_A20
-
-    jnc .not_set0
-    mov si, A20_enabled_str
-    call print_string
-    jmp .cont
-
-.not_set0:
-    mov si,A20_not_enabled_str
-    call print_string
-
-
-
-.cont:
-
     call Enable_A20
-
-    call Check_A20
-    jnc .not_set
-
-    mov si, A20_enabled_str
-    call print_string
-    jmp infinite_halt
-
-.not_set:
-    mov si,A20_not_enabled_str
-    call print_string
-    jmp infinite_halt
-
+    xor ax,ax
+    mov es,ax
+    mov di,0x500
+    call Generate_Memory_Map
+    movzx eax, word [Below_1MB_Memory_Size]
+    movzx ebx, word [Memory_Map_Pointer]
+    movzx ecx, word [Memory_Map_Size]
+    xchg bx,bx
 
 infinite_halt:
     hlt
@@ -69,6 +53,4 @@ print_string:
 
 
 %include "a20.asm"
-SECTION .data
-A20_enabled_str: db `A20 line enabled!\n\r`,0
-A20_not_enabled_str: db `A20 was not enabled!\n\r`,0
+%include "memory_map.asm"

@@ -1,6 +1,6 @@
 .PHONY: run
 
-BOOTLOADER_ASMS = a20.asm bootloader.asm main.asm
+BOOTLOADER_ASMS = a20.asm bootloader.asm main.asm memory_map.asm
 
 run: bootloader
 	bochs -f bochs_config -debugger
