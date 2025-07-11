@@ -105,3 +105,4 @@ test_value1:
     dw 0xAA55
 
 %include "main.asm"
+Kernel_Start:

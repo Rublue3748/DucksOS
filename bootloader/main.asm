@@ -3,14 +3,17 @@
 ; - Setup FPU
 ; - (DONE) Generate Memory Map
 ; - (DONE) Select Video Mode
+; - (Later, current kernel is small enough to be loaded with this bootstrapping stage) 
+;       Load in kernel (might involve swapping back and forth w/ protected mode)
+; - (Later) preserve old GDT and IVT, so that we can switch back to call bios interrupts
 ; - Set up protected mode
-; - Load in kernel (might involve swapping back and forth w/ protected mode)
-; - Enter protected mode and kernel
+; - Enter protected mode and process kernel to enter it
 
 SECTION .text
 bits 16
 
 boot:
+
     call Enable_A20
     xor ax,ax
     mov es,ax
@@ -20,10 +23,7 @@ boot:
     mov [Video_Mode_Ptr],edi
     call Get_Current_Video_Mode
 
-    movzx eax, word [Below_1MB_Memory_Size]
-    movzx ebx, word [Memory_Map_Pointer]
-    movzx ecx, word [Memory_Map_Size]
-    xchg bx,bx
+    jmp Enter_Protected_Mode
 
 infinite_halt:
     hlt
@@ -60,3 +60,4 @@ Video_Mode_Ptr: resd 1
 %include "a20.asm"
 %include "memory_map.asm"
 %include "video.asm"
+%include "protected_mode.asm"

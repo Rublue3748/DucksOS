@@ -11,11 +11,9 @@ Generate_Memory_Map:
     push ebx
     push ecx
     push edx
-    xchg bx,bx
     clc
     ; Get the size of the area below the 1 MB limit (i.e. the address of the EBDA)
     int 0x12
-    xchg bx,bx
     jc .error
     mov [Below_1MB_Memory_Size],ax
 
@@ -30,7 +28,6 @@ Generate_Memory_Map:
     mov edx,0x534D4150 ; EDX = Magic number
     clc
     int 0x15
-    xchg bx,bx
 
     ; Break out of the loop if any of the following happens:
     ; - Carry flag is set (Possible Error), ignore last entry

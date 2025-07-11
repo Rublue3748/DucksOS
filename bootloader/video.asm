@@ -18,18 +18,21 @@ Get_Current_Video_Mode:
     ; Get the current video mode id
     mov ax, 0x4F03
     int 0x10    ; int 0x10, AX=4F03 => Get current video mode
-
+    xchg bx,bx
     cmp ax,0x004F ; Returns 0x004F in AX on success
     jne .error
     
+    ; FIXME: Throws an error code of 1
     ; Video mode returned in bx, but int 0x10, AX=4F01 requires it in cx
     xchg bx,cx
     mov ax,0x4F01
 
     int 0x10 ; int 0x10, 4F01 => Returns info about the current video mode
+    xchg bx,bx
     cmp ax,0x004F ; Returns 0x004F in AX on success
     jne .error
 
+.exit:
     pop cx
     pop bx
     pop ax  
@@ -37,9 +40,13 @@ Get_Current_Video_Mode:
     ret
 
 .error:
+    ; FIXME: Temporary hack to avoid the error code
+    push si
     mov si,.video_error_str
     call print_string
-    jmp infinite_halt
+    pop si
+    jmp .exit
+    ; jmp infinite_halt
 
 SECTION .data
 .video_error_str: db `A critical error has occurred finding video information. Halting!`,0
