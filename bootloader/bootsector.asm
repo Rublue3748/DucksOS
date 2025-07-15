@@ -1,5 +1,8 @@
-NUM_SECTORS equ 50
+%ifndef NUM_SECTORS
+%define NUM_SECTORS 50
+%endif
 
+SECTION .bootsector
 org 0x7c00
 bits 16
 
@@ -59,7 +62,7 @@ start:
     jmp .error
 
 .successful_load:
-    jmp boot
+    jmp 0x7E00
 
     
 
@@ -104,5 +107,9 @@ test_value1:
     times 510-($-$$) db 0 
     dw 0xAA55
 
-%include "main.asm"
-Kernel_Start:
+; %include "main.asm"
+; SECTION
+; debug_start:
+; times 512 - (($ - $$) % 512) db 0
+; Kernel_Start:
+; [map symbols test.map]

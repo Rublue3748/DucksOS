@@ -1,0 +1,7 @@
+extern Enable_A20
+extern Generate_Memory_Map
+extern Get_Current_Video_Mode
+extern Enter_Protected_Mode
+extern print_string
+extern infinite_halt
+extern boot

@@ -1,5 +1,7 @@
-SECTION .text
+SECTION .boot.text
 bits 16
+
+%include "includes.asm"
 
 ; Gets information about the current video mode and stores it at es:di
 ; NB: es:di should probably be 256 byte aligned.
@@ -48,7 +50,5 @@ Get_Current_Video_Mode:
     jmp .exit
     ; jmp infinite_halt
 
-SECTION .data
+SECTION .boot.data
 .video_error_str: db `A critical error has occurred finding video information. Halting!`,0
-; SECTION .bss
-; .Subsystem_Info: align 256,resb 256

@@ -1,7 +1,14 @@
-BOOTLOADER_ASMS = a20.asm bootloader.asm main.asm memory_map.asm video.asm protected_mode.asm kernel_setup.asm
+BOOTLOADER_ASMS = a20.asm main.asm memory_map.asm video.asm protected_mode.asm kernel_setup.asm
+BOOTLOADER_OBJS = $(patsubst %.asm,%.o,$(BOOTLOADER_ASMS))
 
-bootloader: $(BOOTLOADER_ASMS)
-	nasm -O0 bootloader.asm
+bootloader.a: $(BOOTLOADER_OBJS)
+	ar rcs $@ $^
+
+bootsector: bootsector.asm
+	nasm -O0 bootsector.asm -o bootsector -DNUM_SECTORS=$(NUM_SECTORS)
+
+%.o: %.asm
+	nasm -O0 $< -o $@ -felf -Wall --gprefix BOOTLOADER_ --lprefix BOOTLOADER_
 
 clean:
-	rm bootloader
+	rm *.a bootsector *.o 

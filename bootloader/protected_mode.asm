@@ -1,6 +1,7 @@
+SECTION .boot.text
 bits 16
 
-SECTION .text
+%include "includes.asm"
 ; This function is not meant to return (i.e. just jump to it)
 Enter_Protected_Mode:
     ; Steps:
@@ -31,7 +32,7 @@ Enter_Protected_Mode:
     ; Assert CS and jump to protected mode entry point
     jmp 0x8:Protected_Start
 
-SECTION .data
+SECTION .boot.data
 .GDTR: times 6 db 0
 align 16
 .dummy_GDT: times 8 db 0
@@ -56,5 +57,3 @@ Protected_Start:
 .infinite_halt:
     hlt
     jmp .infinite_halt
-
-%include "kernel_setup.asm"

@@ -1,18 +1,44 @@
 BOOTLOADER_DIR = bootloader
-BOOTLOADER_OUTPUT = $(BOOTLOADER_DIR)/bootloader
+BOOTLOADER_OUTPUT = $(BOOTLOADER_DIR)/bootloader.a
+BOOTSECTOR_OUTPUT = $(BOOTLOADER_DIR)/bootsector
 
-.PHONY: run clean $(BOOTLOADER_OUTPUT)
+KERNEL_DIR = kernel
+KERNEL_OUTPUT = $(KERNEL_DIR)/kernel.a
 
-run: final.img
+.PHONY: debug clean $(BOOTLOADER_OUTPUT) $(KERNEL_OUTPUT) $(BOOTSECTOR_OUTPUT)
+
+debug: final.img symbols.sym
 	bochs -f bochs_config -debugger
 
-final.img: $(BOOTLOADER_OUTPUT)
-	dd if=/dev/null of=$(BOOTLOADER_OUTPUT) bs=1 count=1 seek=161280
-	cp $(BOOTLOADER_OUTPUT) final.img
+final.img: $(BOOTSECTOR_OUTPUT) bootloader.bin kernel.elf
+	./build_img.sh
+
+$(BOOTSECTOR_OUTPUT): bootloader.bin # Needs the size of the second stage bootloader passed as the number of sectors
+	$(MAKE) -C $(BOOTLOADER_DIR) bootsector NUM_SECTORS=$$(($$(stat -c %s bootloader.bin)/512 + 1))
+
+bootloader.bin: full_image.elf
+	objcopy -O binary --remove-section=* --keep-section=.boot* $^ $@
+
+kernel.elf: full_image.elf
+	objcopy --strip-all --remove-section=.boot* $^ $@
+
+symbols.sym: full_image.elf
+	objdump -t $< | \
+	grep -E '^([0-9]|[a-f]|[A-F]){8}' |\
+	sed --regexp-extended -f symbol.sed > $@
+
+
+full_image.elf: $(BOOTLOADER_OUTPUT) $(KERNEL_OUTPUT)
+	i686-elf-gcc -T linker.ld -ffreestanding -O2 -nostdlib -o $@ -Wl,--whole-archive -Wl,-z -Wl,separate-code $^ -Wl,--no-whole-archive -lgcc
 
 $(BOOTLOADER_OUTPUT):
-	$(MAKE) -C bootloader
+	$(MAKE) -C $(BOOTLOADER_DIR)
+
+$(KERNEL_OUTPUT):
+	$(MAKE) -C $(KERNEL_DIR)
+
 
 clean:
-	-rm final.img
-	-$(MAKE) -C bootloader clean
+	-rm final.img *.elf *.bin *.sym
+	-$(MAKE) -C $(BOOTLOADER_DIR) clean
+	-$(MAKE) -C $(KERNEL_DIR) clean

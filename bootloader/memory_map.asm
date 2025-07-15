@@ -1,5 +1,7 @@
-SECTION .text
+SECTION .boot.text
 bits 16
+%include "includes.asm"
+
 
 ; Generates a memory map of the system at [es:di], while also populating the Below_1MB_Memory_Size and Memory Map Pointer/Size
 ; Returns: 
@@ -64,10 +66,11 @@ Generate_Memory_Map:
     call print_string
     jmp infinite_halt
 
-SECTION .data
+SECTION .boot.data
 .error_str: db "An error occurred while generating the memory map!",0
 
-SECTION .bss
-Below_1MB_Memory_Size: resw 1
-Memory_Map_Pointer: resw 1
-Memory_Map_Size: resw 1
+
+global Below_1MB_Memory_Size,Memory_Map_Pointer,Memory_Map_Size
+Below_1MB_Memory_Size: dw 1
+Memory_Map_Pointer: dw 1
+Memory_Map_Size: dw 1

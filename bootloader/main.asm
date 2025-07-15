@@ -9,8 +9,11 @@
 ; - Set up protected mode
 ; - Enter protected mode and process kernel to enter it
 
-SECTION .text
+SECTION .boot.start
 bits 16
+
+%include "includes.asm"
+
 
 boot:
 
@@ -54,10 +57,10 @@ print_string:
     ret
 
 
-SECTION .bss
-Video_Mode_Ptr: resd 1
+SECTION .boot.data
+Video_Mode_Ptr: dd 0
 
-%include "a20.asm"
-%include "memory_map.asm"
-%include "video.asm"
-%include "protected_mode.asm"
+; %include "a20.asm"
+; %include "memory_map.asm"
+; %include "video.asm"
+; %include "protected_mode.asm"

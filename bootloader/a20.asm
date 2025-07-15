@@ -1,6 +1,8 @@
 
-SECTION .text
+SECTION .boot.text
 bits 16
+
+%include "includes.asm"
 
 Enable_A20:
     pushf
@@ -125,5 +127,5 @@ Check_A20:
     clc
     ret   
 
-SECTION .bss
-test_value: resw 1
+SECTION .boot.data
+test_value: dw 0
