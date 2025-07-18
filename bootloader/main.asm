@@ -6,8 +6,8 @@
 ; - (Later, current kernel is small enough to be loaded with this bootstrapping stage) 
 ;       Load in kernel (might involve swapping back and forth w/ protected mode)
 ; - (Later) preserve old GDT and IVT, so that we can switch back to call bios interrupts
-; - Set up protected mode
-; - Enter protected mode and process kernel to enter it
+; - Set up kernel (Swapping between Real and Protected Mode)
+; - Enter Protected Mode, setup stack and start the kernel
 
 SECTION .boot.start
 bits 16
@@ -25,6 +25,10 @@ boot:
 
     mov [Video_Mode_Ptr],edi
     call Get_Current_Video_Mode
+
+
+    call Kernel_Setup
+    mov [Entry_Point],eax
 
     jmp Enter_Protected_Mode
 
@@ -59,6 +63,7 @@ print_string:
 
 SECTION .boot.data
 Video_Mode_Ptr: dd 0
+Entry_Point: dd 0
 
 ; %include "a20.asm"
 ; %include "memory_map.asm"

@@ -5,3 +5,5 @@ extern Enter_Protected_Mode
 extern print_string
 extern infinite_halt
 extern boot
+extern Kernel_Setup
+extern Entry_Point

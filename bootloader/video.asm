@@ -20,7 +20,6 @@ Get_Current_Video_Mode:
     ; Get the current video mode id
     mov ax, 0x4F03
     int 0x10    ; int 0x10, AX=4F03 => Get current video mode
-    xchg bx,bx
     cmp ax,0x004F ; Returns 0x004F in AX on success
     jne .error
     
@@ -30,9 +29,8 @@ Get_Current_Video_Mode:
     mov ax,0x4F01
 
     int 0x10 ; int 0x10, 4F01 => Returns info about the current video mode
-    xchg bx,bx
     cmp ax,0x004F ; Returns 0x004F in AX on success
-    jne .error
+    ; jne .error
 
 .exit:
     pop cx

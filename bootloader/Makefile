@@ -4,8 +4,8 @@ BOOTLOADER_OBJS = $(patsubst %.asm,%.o,$(BOOTLOADER_ASMS))
 bootloader.a: $(BOOTLOADER_OBJS)
 	ar rcs $@ $^
 
-bootsector: bootsector.asm
-	nasm -O0 bootsector.asm -o bootsector -DNUM_SECTORS=$(NUM_SECTORS)
+bootsector: bootsector.asm bootloader.a
+	nasm -O0 bootsector.asm -o bootsector -Wall -DNUM_SECTORS=$(NUM_SECTORS)
 
 %.o: %.asm
 	nasm -O0 $< -o $@ -felf -Wall --gprefix BOOTLOADER_ --lprefix BOOTLOADER_

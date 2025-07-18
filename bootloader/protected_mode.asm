@@ -50,8 +50,10 @@ Protected_Start:
     mov gs,eax
     mov ss,eax
     mov esp,0x7C00
-    xchg bx,bx
 
+    xchg bx,bx
+    mov eax,[Entry_Point]
+    jmp far eax
     ; Setup the kernel and then jmp to it's start
 
 .infinite_halt:

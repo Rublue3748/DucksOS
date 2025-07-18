@@ -1,18 +1,22 @@
 void print_debug(const char *str);
+void infinite_halt(void);
 
-extern int *BOOTLOADER_Memory_Map_Pointer;
-
-int x = 5;
-
-int main() {
+void kmain() {
   print_debug("Hello world!");
-  *BOOTLOADER_Memory_Map_Pointer = 5;
-  return 0;
+  infinite_halt();
 }
 
 void print_debug(const char *str) {
   int i = 0;
   while (str[i] != '\0') {
     asm volatile("out %0,%1" : : "N"(0xE9), "a"(str[i]) : "memory");
+    i++;
+  }
+}
+
+void infinite_halt(void) {
+  asm volatile("cli" : : : "memory");
+  while (1) {
+    asm volatile("hlt" : : : "memory");
   }
 }
