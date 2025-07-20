@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cp ./bootloader/bootsector ./final.img
+cp ./bootloader/$1/bootsector ./final.img
 dd if=./bootloader.bin of=./final.img seek=1
 file_size=$(stat -c %s final.img)
 needed_bytes=$((512-(file_size%512)))
