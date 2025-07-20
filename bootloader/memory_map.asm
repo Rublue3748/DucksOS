@@ -71,6 +71,6 @@ SECTION .boot.data
 
 
 global Below_1MB_Memory_Size,Memory_Map_Pointer,Memory_Map_Size
-Below_1MB_Memory_Size: dw 1
-Memory_Map_Pointer: dw 1
-Memory_Map_Size: dw 1
+Below_1MB_Memory_Size: dd 1
+Memory_Map_Pointer: dd 1
+Memory_Map_Size: dd 1
