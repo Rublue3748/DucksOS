@@ -62,6 +62,7 @@ print_string:
 
 
 SECTION .boot.data
+global Video_Mode_Ptr
 Video_Mode_Ptr: dd 0
 Entry_Point: dd 0
 
