@@ -30,7 +30,7 @@ symbols.sym: full_image.elf
 
 
 full_image.elf: $(BOOTLOADER_OUTPUT) $(KERNEL_OUTPUT)
-	i686-elf-gcc -T linker.ld -ffreestanding -O0 -g -nostdlib -o $@ -Wl,--whole-archive -Wl,-z -Wl,separate-code $^ -Wl,--no-whole-archive -lgcc
+	i686-elf-g++ -T linker.ld -ffreestanding -O0 -g -nostdlib -nostdlib++ -o $@ -Wl,--whole-archive -Wl,-z -Wl,separate-code $^ -Wl,--no-whole-archive -lgcc
 
 $(BOOTLOADER_OUTPUT):
 	$(MAKE) -C $(BOOTLOADER_DIR) BUILD_DIR=$(BUILD_DIR)

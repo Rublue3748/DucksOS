@@ -12,7 +12,7 @@ GENERAL_OPTIONS = $(WARNINGS) $(OPTIMIZATIONS) $(MAKEFILE_DEPS_OPTIONS) -masm=in
 CSTD = -std=c99
 CFLAGS = $(CSTD) $(GENERAL_OPTIONS)
 
-CPPSTD = -std=c++11
+CPPSTD = -std=c++14
 CPPFLAGS = -fno-exceptions -fno-rtti $(CPPSTD) $(GENERAL_OPTIONS)
 
 .PHONY: clean
