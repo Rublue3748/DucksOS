@@ -152,6 +152,13 @@ bits 16
  ; Trashed: Sector_Storage
  ; Return: None
 Kernel_Load_Program_Header:
+.stack_size equ 20
+    ; Stack:
+    ; esp + 0 ->  dword: number of bytes left to transfer
+    ; esp + 4 ->  qword: SGDT store location (technically only 6 bytes, but keep byte alignment)
+    ; esp + 12 -> dword: Drive number
+    ; esp + 16 -> dword: Current sector to read from
+    ; esp + 20 -> dword: Offset into sector to read from (i.e. 0-511)
 
     pushf
     pushad
@@ -162,16 +169,7 @@ Kernel_Load_Program_Header:
     cmp dword [ebx+0x10], 0 ; If size is 0, then ignore
     je .done_no_pop
 
-    mov eax, [ebx+0x04]
-    and eax, 511 ; Check if the bottom bits are set. If so, then this isn't aligned on a 512 page
-    jnz .alignment_error
-
-
-    sub esp,16
-    ; Stack:
-    ; esp + 0 ->  dword: number of bytes left to transfer
-    ; esp + 4 ->  qword: SGDT store location (technically only 6 bytes, but keep byte alignment)
-    ; esp + 12 -> dword: Drive number
+    sub esp,.stack_size
 
     mov eax,[ebx+0x10] ; Load size in bytes of program segment
     mov [esp],eax      ; Store that as number of bytes remaining
@@ -179,31 +177,34 @@ Kernel_Load_Program_Header:
     ; Store drive number
     mov [esp+12],dx
 
+    ; Start sector = Sector_Offset + (floor(p_offset / 512))
+    mov ax, [ebx+4] ; dx:ax = p_offset
+    mov dx, [ebx+6]
+    mov cx, 512
+    div cx ; ax = quotient
+    movzx eax,ax ; Clear top half of eax
+    add eax,[Sector_Offset] ; Add Sector Offset
+
+    ; Current sector = eax
+    mov [esp+16],eax
+
+    ; Offset into sector = p_offset & 511 (i.e. bottom 9 bits)
+    mov eax,[ebx+4]
+    and eax,0x1FF
+    mov [esp+20],eax
+
 .loop:
     cmp dword [esp],0  ; Check if there's still data to be loaded
     je .done 
     
-    ; Offset into image file = (size of segment - number of bytes) + segment offset into image
-    mov eax, [ebx + 0x10]
-    sub eax, [esp]
-    add eax, [ebx + 0x4]
-    
-    ; Sector position = Sector_Offset + (offset into image file / 512)
-    ; Move offset into DX:AX and then divide by 512
-    mov edx, eax
-    shr edx, 16
-    movzx eax, ax
-    mov cx, 512
-    div cx
-    ; Quotient in AX, ignore remainded in dx
-    add eax,[Sector_Offset]
-
-    ; Now load from this offset at eax
+    ; Setup LBA packet
     mov [.LBA_Packet],   byte 0x10
     mov [.LBA_Packet+1], byte 0x0
     mov [.LBA_Packet+2], word 4 ; Load 4 sectors at once
     mov [.LBA_Packet+4], word Sector_Storage
     mov [.LBA_Packet+6], word 0
+    ; Use Current Sector
+    mov eax,[esp+16]
     mov [.LBA_Packet+8], eax
 
     mov esi, .LBA_Packet
@@ -212,6 +213,7 @@ Kernel_Load_Program_Header:
 
     int 0x13
     jc .disk_error
+
     ; The next four sectors should be loaded into Sector Storage. Now switch to 32-bit protected mode
     ; Store old gdt to load later
     sgdt [esp+4]
@@ -225,7 +227,6 @@ Kernel_Load_Program_Header:
     ; Set up temporary protected mode gdt
     mov word [.dummy_GDTR],31
     mov dword [.dummy_GDTR+2],.dummy_GDT
-    ; xchg bx,bx
     lgdt [.dummy_GDTR]
 
     ; Enable Protected Mode
@@ -244,15 +245,17 @@ Kernel_Load_Program_Header:
     mov es,ax
     mov ss,ax
 
+    ; Set source and destination
+    mov esi, Sector_Storage
+    add esi, [esp+20]
     ; Number of bytes to copy (ecx) = min(number of bytes left [esp], 4 * sector size)
     mov ecx,[esp]
     cmp ecx,4*512
     jle .not_too_much
     mov ecx,4*512
 .not_too_much:
-
-    ; Set source and destination
-    mov esi, Sector_Storage
+    sub ecx,[esp+20]
+    mov [esp+20],dword 0
 
     ; Destination = (segment size - number of bytes remaining) + paddr
     mov edi, [ebx + 0x10]
@@ -264,7 +267,6 @@ Kernel_Load_Program_Header:
 
     ; Copy the bytes
     rep movsb
-    ; xchg bx,bx
 
     mov word [.dummy_GDTR],31
     mov dword [.dummy_GDTR+2],.dummy_16_bit_GDT
@@ -293,21 +295,17 @@ bits 16
     mov ss,ax
 
     sti
-
+    add [esp+16],dword 4
     jmp .loop
 
 .done:
     ; Clean up stack
-    add esp,16
+    add esp,.stack_size
 .done_no_pop:
     popad
     popf
     ret
 
-.alignment_error:
-    mov si,.alignment_error_str
-    call print_string
-    jmp infinite_halt
 .disk_error:
     mov si,.disk_error_str
     call print_string
@@ -325,7 +323,6 @@ align 16
     db 0xFF,0xFF,0,0,0,0x93,0x00,0x00
     db 0xFF,0xFF,0,0,0,0x9B,0x00,0x00
 
-.alignment_error_str: db `Program segment not aligned on 512b page!`,0
 .disk_error_str: db `An unexpected disk error has occurred!`,0
 SECTION .boot.bss nobits write noexec
 .LBA_Packet:
