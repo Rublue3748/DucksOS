@@ -1,5 +1,6 @@
 # DucksOS
 DucksOS (Read: Duck sauce) is a work-in-progress kernel and OS.
+This serves as the spiritual successor to a previous project (SnakeOS) from 2020.
 ## Current Features
 - Basic Bootloader
 ## Planned Features
